@@ -26,8 +26,7 @@ def calculate_combinations(password_length: int, alphabet_size: int) -> int:
 
 
 def estimate_brute_force_time(combinations: int, attempts_per_second: int, pause_time, attempts_before_pause) -> float:
-    total_time = combinations / attempts_per_second
-    total_time += total_time * pause_time / attempts_before_pause
+    total_time = combinations / attempts_per_second + ((combinations - 1) * pause_time / attempts_before_pause)
     return total_time
 
 
