@@ -3,6 +3,7 @@ import sys
 import random
 from collections import defaultdict
 from typing import Dict, List, TypeVar
+import matplotlib.pyplot as plt
 
 TKey = TypeVar('TKey')
 
@@ -34,6 +35,36 @@ class FrequencyAnalysis:
     def get_top_n(dictionary: Dict[TKey, int], n: int) -> Dict[TKey, int]:
         """Возвращает n самых частых элементов"""
         return dict(sorted(dictionary.items(), key=lambda x: x[1], reverse=True)[:n])
+
+    @staticmethod
+    def plot_frequency(text: str, top_n: int = 10):
+        """Анализирует и визуализирует топ-N букв и биграмм"""
+        plt.figure(figsize=(15, 6))
+
+        # Анализ букв
+        letter_freq = FrequencyAnalysis.get_letter_frequency(text)
+        top_letters = FrequencyAnalysis.get_top_n(letter_freq, top_n)
+
+        plt.subplot(1, 2, 1)
+        letters, counts = zip(*sorted(top_letters.items(), key=lambda x: x[1]))
+        plt.bar(letters, counts, color='skyblue')
+        plt.title(f'Топ-{top_n} часто встречаемых букв')
+        plt.xlabel('Буквы')
+        plt.ylabel('Частота')
+
+        # Анализ биграмм
+        bigram_freq = FrequencyAnalysis.get_bigram_frequency(text)
+        top_bigrams = FrequencyAnalysis.get_top_n(bigram_freq, top_n)
+
+        plt.subplot(1, 2, 2)
+        bigrams, b_counts = zip(*sorted(top_bigrams.items(), key=lambda x: x[1]))
+        plt.bar(bigrams, b_counts, color='lightgreen')
+        plt.title(f'Топ-{top_n} часто встречаемых биграмм')
+        plt.xlabel('Биграммы')
+        plt.ylabel('Частота')
+
+        plt.tight_layout()
+        plt.show()
 
 
 class CaesarAnalysis:
@@ -414,17 +445,49 @@ def vigenere_menu():
         sys.exit(1)
 
 
+def frequency_analysis_menu():
+    """Меню для анализа частот"""
+    print("\n=== Анализ частот ===")
+    input_file = input("Введите имя файла для анализа: ")
+    top_n = int(input("Сколько топ элементов показать (по умолч. 10): ") or 10)
+
+    try:
+        text = read_file(input_file)
+        print("\nРезультаты анализа:")
+
+        # Текстовый вывод
+        letter_freq = FrequencyAnalysis.get_letter_frequency(text)
+        print(f"\nТоп-{top_n} букв:")
+        for letter, count in FrequencyAnalysis.get_top_n(letter_freq, top_n).items():
+            print(f"{letter}: {count}")
+
+        bigram_freq = FrequencyAnalysis.get_bigram_frequency(text)
+        print(f"\nТоп-{top_n} биграмм:")
+        for bigram, count in FrequencyAnalysis.get_top_n(bigram_freq, top_n).items():
+            print(f"{bigram}: {count}")
+
+        # Графический вывод
+        FrequencyAnalysis.plot_frequency(text, top_n)
+
+    except Exception as e:
+        print(f"Ошибка при анализе: {e}")
+    sys.exit(0)
+
+
 def main():
     print("=== Криптоанализ ===")
     print("1. Шифр Цезаря")
     print("2. Шифр Виженера")
+    print("3. Анализ частот букв и биграмм")
 
-    choice = input("Выберите шифр (1-2): ").strip()
+    choice = input("Выберите опцию (1-3): ").strip()
 
     if choice == "1":
         caesar_menu()
     elif choice == "2":
         vigenere_menu()
+    elif choice == "3":
+        frequency_analysis_menu()
     else:
         print("Неверный выбор")
         sys.exit(1)
